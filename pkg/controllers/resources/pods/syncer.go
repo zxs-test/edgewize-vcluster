@@ -233,6 +233,11 @@ func (s *podSyncer) SyncDown(ctx *synccontext.SyncContext, vObj client.Object) (
 		return ctrl.Result{}, nil
 	}
 
+	if !edgewize.IsPodNeedSync(vPod) {
+		klog.Infof("Skip sync pod %s/%s because it is not needed", vPod.Namespace, vPod.Name)
+		return ctrl.Result{}, nil
+	}
+
 	// in some scenarios it is possible that the pod was already started and the physical pod
 	// was deleted without vcluster's knowledge. In this case we are deleting the virtual pod
 	// as well, to avoid conflicts with nodes if we would resync the same pod to the host cluster again.

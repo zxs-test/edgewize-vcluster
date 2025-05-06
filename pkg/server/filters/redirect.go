@@ -65,6 +65,12 @@ func WithRedirect(h http.Handler, localConfig *rest.Config, localScheme *runtime
 					h.ServeHTTP(w, req)
 					return
 				}
+
+				if !edgewize.IsPodNeedSync(pod) {
+					klog.Infof("Skip sync pod %s/%s because it is not needed", pod.Namespace, pod.Name)
+					h.ServeHTTP(w, req)
+					return
+				}
 			}
 
 			// call admission webhooks

@@ -15,9 +15,8 @@ import (
 
 var (
 	fakenodes = &sync.Map{}
-	once = sync.Once{}
+	once      = sync.Once{}
 )
-
 
 func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 	namespace := &corev1.Namespace{}
@@ -26,6 +25,10 @@ func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 		return false, err
 	}
 	return namespace.Labels["kubesphere.io/workspace"] == "system-workspace", nil
+}
+
+func IsPodNeedSync(pod *corev1.Pod) bool {
+	return pod.GetLabels()["edgewize.io/pod-need-sync"] == ""
 }
 
 func IsFakeNode(cli client.Client, name string) (bool, error) {
