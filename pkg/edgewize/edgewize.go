@@ -2,6 +2,7 @@ package edgewize
 
 import (
 	"context"
+	"fmt"
 	synccontext "github.com/loft-sh/vcluster/pkg/controllers/syncer/context"
 	"github.com/loft-sh/vcluster/pkg/util/translate"
 	"k8s.io/apimachinery/pkg/labels"
@@ -28,7 +29,9 @@ func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 }
 
 func IsPodNeedSync(pod *corev1.Pod) bool {
-	return pod.GetLabels()["edgewize.io/pod-need-sync"] == ""
+	_, ok := pod.GetLabels()["edgewize.io/pod-need-sync"]
+	fmt.Println(fmt.Sprintf("for pod %s/%s need sync is %v", pod.Namespace, pod.Name, ok))
+	return ok
 }
 
 func IsFakeNode(cli client.Client, name string) (bool, error) {
