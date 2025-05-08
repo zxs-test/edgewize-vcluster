@@ -18,6 +18,14 @@ jobs:
     runs-on: self-hosted
 
     steps: 
+
+      - name: Test network connectivity
+        run: |
+          ping -c 3 registry-1.docker.io
+          curl -v https://registry-1.docker.io/v2/
+          nslookup registry-1.docker.io
+          traceroute registry-1.docker.io
+          
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
         with:
