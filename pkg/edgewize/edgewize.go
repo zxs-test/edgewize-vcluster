@@ -5,6 +5,9 @@ import (
 	"fmt"
 	synccontext "github.com/loft-sh/vcluster/pkg/controllers/syncer/context"
 	"github.com/loft-sh/vcluster/pkg/util/translate"
+	appv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 	"sync"
@@ -28,10 +31,51 @@ func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 	return namespace.Labels["kubesphere.io/workspace"] == "system-workspace", nil
 }
 
-func IsPodNeedSync(pod *corev1.Pod) bool {
+func IsPodNeedSync(cli client.Client, pod *corev1.Pod) bool {
 	_, ok := pod.GetLabels()["edgewize.io/ignore-sync-pod"]
-	fmt.Println(fmt.Sprintf("for pod %s/%s ignore sync is %v", pod.Namespace, pod.Name, ok))
+	if ok {
+		fmt.Println(fmt.Sprintf("for pod %s/%s ignore sync is %v", pod.Namespace, pod.Name, ok))
+		return false
+	}
+	ref := metav1.GetControllerOf(pod)
+	pl := getParentLabel(cli, pod.Namespace, ref)
+	_, ok = pl["edgewize.io/ignore-sync-pod"]
+	fmt.Println(fmt.Sprintf("for %s %s/%s ignore sync is %v", ref.Kind, pod.Namespace, ref.Name, ok))
 	return !ok
+}
+
+func getParentLabel(cli client.Client, namespace string, ref *metav1.OwnerReference) map[string]string {
+	var label = make(map[string]string)
+	var obj client.Object
+	var objKey = types.NamespacedName{
+		Namespace: namespace,
+		Name:      ref.Name,
+	}
+	switch ref.Kind {
+	case "CronJob":
+		obj = new(batchv1.Job)
+	case "DaemonSet":
+		obj = new(appv1.DaemonSet)
+	case "Deployment":
+		obj = new(appv1.Deployment)
+	case "Job":
+		obj = new(batchv1.Job)
+	case "ReplicaSet":
+		var rls *appv1.ReplicaSet
+		err := cli.Get(context.Background(), objKey, rls)
+		if err == nil {
+			return getParentLabel(cli, namespace, metav1.GetControllerOf(rls))
+		}
+	case "StatefulSet":
+		obj = new(appv1.StatefulSet)
+	default:
+		return label
+	}
+	err := cli.Get(context.Background(), objKey, obj)
+	if err != nil || obj == nil {
+		return label
+	}
+	return obj.GetLabels()
 }
 
 func IsFakeNode(cli client.Client, name string) (bool, error) {
