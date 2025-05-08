@@ -29,9 +29,9 @@ func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 }
 
 func IsPodNeedSync(pod *corev1.Pod) bool {
-	_, ok := pod.GetLabels()["edgewize.io/pod-need-sync"]
-	fmt.Println(fmt.Sprintf("for pod %s/%s need sync is %v", pod.Namespace, pod.Name, ok))
-	return ok
+	_, ok := pod.GetLabels()["edgewize.io/ignore-sync-pod"]
+	fmt.Println(fmt.Sprintf("for pod %s/%s ignore sync is %v", pod.Namespace, pod.Name, ok))
+	return !ok
 }
 
 func IsFakeNode(cli client.Client, name string) (bool, error) {
