@@ -5,6 +5,7 @@ import (
 	"fmt"
 	synccontext "github.com/loft-sh/vcluster/pkg/controllers/syncer/context"
 	"github.com/loft-sh/vcluster/pkg/util/translate"
+	"github.com/spf13/pflag"
 	appv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,6 +23,14 @@ var (
 	once      = sync.Once{}
 )
 
+var (
+	IgnoreLabelKey = ""
+)
+
+func ParseEdgewizeFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&IgnoreLabelKey, "ignore-sync-pod", "", "")
+}
+
 func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 	namespace := &corev1.Namespace{}
 	err := cli.Get(context.Background(), types.NamespacedName{Name: name}, namespace)
@@ -32,14 +41,14 @@ func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 }
 
 func IsPodNeedSync(cli client.Client, pod *corev1.Pod) bool {
-	_, ok := pod.GetLabels()["edgewize.io/ignore-sync-pod"]
+	_, ok := pod.GetLabels()[IgnoreLabelKey]
 	if ok {
 		fmt.Println(fmt.Sprintf("for pod %s/%s ignore sync is %v", pod.Namespace, pod.Name, ok))
 		return false
 	}
 	ref := metav1.GetControllerOf(pod)
 	pl := getParentLabel(cli, pod.Namespace, ref)
-	_, ok = pl["edgewize.io/ignore-sync-pod"]
+	_, ok = pl[IgnoreLabelKey]
 	fmt.Println(fmt.Sprintf("for %s %s/%s ignore sync is %v", ref.Kind, pod.Namespace, ref.Name, ok))
 	return !ok
 }
