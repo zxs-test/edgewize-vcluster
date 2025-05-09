@@ -47,6 +47,9 @@ func IsPodNeedSync(cli client.Client, pod *corev1.Pod) bool {
 		return false
 	}
 	ref := metav1.GetControllerOf(pod)
+	if ref == nil {
+		return true
+	}
 	pl := getParentLabel(cli, pod.Namespace, ref)
 	_, ok = pl[IgnoreLabelKey]
 	fmt.Println(fmt.Sprintf("for %s %s/%s ignore sync is %v", ref.Kind, pod.Namespace, ref.Name, ok))
