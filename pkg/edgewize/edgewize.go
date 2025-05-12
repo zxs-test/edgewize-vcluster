@@ -80,6 +80,8 @@ func getParentLabel(cli client.Client, namespace string, ref *metav1.OwnerRefere
 		}
 	case "StatefulSet":
 		obj = new(appv1.StatefulSet)
+	case "Service":
+		obj = new(corev1.Service)
 	default:
 		return label
 	}
