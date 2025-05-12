@@ -3,6 +3,7 @@ package edgewize
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	synccontext "github.com/loft-sh/vcluster/pkg/controllers/syncer/context"
 	"github.com/loft-sh/vcluster/pkg/edgewize/config"
 	"github.com/loft-sh/vcluster/pkg/edgewize/utils"
@@ -43,14 +44,15 @@ func IsPodNeedSync(cli client.Client, pod *corev1.Pod) bool {
 	metadata := pod.ObjectMeta.DeepCopy()
 	data, err := json.Marshal(metadata)
 	if err != nil {
-		return false
+		return true
 	}
 	for _, sls := range config.Cfg.PodSelector {
 		if utils.MatchObjectsByFieldSelector(data, sls) {
-			return true
+			fmt.Println(fmt.Sprintf("check pod %s/%s not need : %s", pod.Namespace, pod.Name, sls))
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func IsFakeNode(cli client.Client, name string) (bool, error) {
