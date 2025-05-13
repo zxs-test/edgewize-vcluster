@@ -40,7 +40,7 @@ func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 	return namespace.Labels["kubesphere.io/workspace"] == "system-workspace", nil
 }
 
-func IsPodNeedSync(cli client.Client, pod *corev1.Pod) bool {
+func IsPodNeedSync(pod *corev1.Pod) bool {
 	metadata := pod.ObjectMeta.DeepCopy()
 	data, err := json.Marshal(metadata)
 	if err != nil {

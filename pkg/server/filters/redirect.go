@@ -66,7 +66,7 @@ func WithRedirect(h http.Handler, localConfig *rest.Config, localScheme *runtime
 					return
 				}
 
-				if !edgewize.IsPodNeedSync(uncachedVirtualClient, pod) {
+				if !edgewize.IsPodNeedSync(pod) {
 					klog.Infof("Skip sync pod %s/%s because it is not needed", pod.Namespace, pod.Name)
 					h.ServeHTTP(w, req)
 					return

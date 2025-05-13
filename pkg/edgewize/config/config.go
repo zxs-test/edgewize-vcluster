@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
@@ -14,6 +15,7 @@ var v *viper.Viper
 
 func init() {
 	_ = initConfig()
+	parseCfg()
 }
 
 func initConfig() error {
@@ -38,4 +40,5 @@ func parseCfg() {
 		return
 	}
 	_ = v.Unmarshal(&Cfg)
+	fmt.Println(Cfg)
 }
