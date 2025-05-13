@@ -47,8 +47,9 @@ func IsPodNeedSync(cli client.Client, pod *corev1.Pod) bool {
 		return true
 	}
 	for _, sls := range config.Cfg.PodSelector {
-		if utils.MatchObjectsByFieldSelector(data, sls) {
-			fmt.Println(fmt.Sprintf("check pod %s/%s not need : %s", pod.Namespace, pod.Name, sls))
+		matched := utils.MatchObjectsByFieldSelector(data, sls)
+		fmt.Println(fmt.Sprintf("check pod %s/%s %v need : %s", pod.Namespace, pod.Name, matched, sls))
+		if matched {
 			return false
 		}
 	}
