@@ -2,12 +2,13 @@ package utils
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/buger/jsonparser"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
-	"regexp"
-	"strings"
 )
 
 // FilterFunc return true if object contains field selector

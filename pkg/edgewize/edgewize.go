@@ -3,18 +3,18 @@ package edgewize
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"sync"
+
 	synccontext "github.com/loft-sh/vcluster/pkg/controllers/syncer/context"
 	"github.com/loft-sh/vcluster/pkg/edgewize/config"
 	"github.com/loft-sh/vcluster/pkg/edgewize/utils"
 	"github.com/loft-sh/vcluster/pkg/util/translate"
-	"github.com/spf13/pflag"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/klog/v2"
-	"sync"
 
+	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -48,8 +48,8 @@ func IsPodNeedSync(pod *corev1.Pod) bool {
 	}
 	for _, sls := range config.Cfg.PodSelector {
 		matched := utils.MatchObjectsByFieldSelector(data, sls)
-		fmt.Println(fmt.Sprintf("check pod %s/%s %v need : %s", pod.Namespace, pod.Name, matched, sls))
 		if matched {
+			klog.Infof("pod %s/%s %v not need sync because rule: %s", pod.Namespace, pod.Name, matched, sls)
 			return false
 		}
 	}

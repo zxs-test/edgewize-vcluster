@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
@@ -40,5 +39,4 @@ func parseCfg() {
 		return
 	}
 	_ = v.Unmarshal(&Cfg)
-	fmt.Println(Cfg)
 }
