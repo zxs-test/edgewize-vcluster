@@ -10,7 +10,6 @@ import (
 	"github.com/loft-sh/vcluster/pkg/edgewize/utils"
 	"github.com/loft-sh/vcluster/pkg/util/translate"
 
-	"github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -22,14 +21,6 @@ var (
 	fakenodes = &sync.Map{}
 	once      = sync.Once{}
 )
-
-var (
-	IgnoreLabelKey = ""
-)
-
-func ParseEdgewizeFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&IgnoreLabelKey, "ignore-sync-pod", "", "")
-}
 
 func IsSystemWorkspace(cli client.Client, name string) (bool, error) {
 	namespace := &corev1.Namespace{}
@@ -46,10 +37,22 @@ func IsPodNeedSync(pod *corev1.Pod) bool {
 	if err != nil {
 		return true
 	}
-	for _, sls := range config.Cfg.PodSelector {
-		matched := utils.MatchObjectsByFieldSelector(data, sls)
+	allowed := false
+	for _, sls := range config.Cfg.AllowPodSyncDownRule {
+		matched := utils.MatchObjectsByFieldSelector(data, sls.Selector)
 		if matched {
-			klog.Infof("pod %s/%s %v not need sync because rule: %s", pod.Namespace, pod.Name, matched, sls)
+			klog.Infof("pod %s/%s %v need sync because rule: %s", pod.Namespace, pod.Name, matched, sls.Name)
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return false
+	}
+	for _, sls := range config.Cfg.SkipPodSyncDownRule {
+		matched := utils.MatchObjectsByFieldSelector(data, sls.Selector)
+		if matched {
+			klog.Infof("pod %s/%s %v not need sync because rule: %s", pod.Namespace, pod.Name, matched, sls.Name)
 			return false
 		}
 	}

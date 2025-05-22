@@ -6,7 +6,12 @@ import (
 )
 
 type Config struct {
-	PodSelector []string `yaml:"podSelector"`
+	AllowPodSyncDownRule []Rule `yaml:"allowPodSyncDownRule"`
+	SkipPodSyncDownRule  []Rule `yaml:"skipPodSyncDownRule"`
+}
+type Rule struct {
+	Selector string `yaml:"selector"`
+	Name     string `yaml:"name"`
 }
 
 var Cfg Config
