@@ -40,8 +40,8 @@ func IsPodNeedSync(pod *corev1.Pod) bool {
 	allowed := false
 	for _, sls := range config.Cfg.AllowPodSyncDownRule {
 		matched := utils.MatchObjectsByFieldSelector(data, sls.Selector)
-		klog.Infof("pod %s/%s %v need sync because rule: %s", pod.Namespace, pod.Name, matched, sls.Name)
 		if matched {
+			klog.Infof("pod %s/%s need sync because rule: %s", pod.Namespace, pod.Name, sls.Name)
 			allowed = true
 			break
 		}
@@ -51,8 +51,8 @@ func IsPodNeedSync(pod *corev1.Pod) bool {
 	}
 	for _, sls := range config.Cfg.SkipPodSyncDownRule {
 		matched := utils.MatchObjectsByFieldSelector(data, sls.Selector)
-		klog.Infof("pod %s/%s %v not need sync because rule: %s", pod.Namespace, pod.Name, matched, sls.Name)
 		if matched {
+			klog.Infof("pod %s/%s not need sync because rule: %s", pod.Namespace, pod.Name, sls.Name)
 			return false
 		}
 	}
